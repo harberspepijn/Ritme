@@ -1,5 +1,7 @@
 # Ritme
 
+**[Open Ritme](https://harberspepijn.github.io/Ritme/)** — werkt in de browser op telefoon, tablet en computer.
+
 Een Nederlandse habit-app voor kleine, bewuste stappen. React, TypeScript en Vite; je gewoontes en registraties worden in IndexedDB bewaard. De app begint leeg en verstuurt geen gebruikersgegevens. Geen account of backend nodig.
 
 ## Starten
@@ -80,7 +82,7 @@ npm run deploy:pages
 
 Het commando controleert dat je werk gecommit is, bouwt met het juiste repositorypad en pusht alleen de gebouwde app naar `gh-pages`. Het bouwt geen geschiedenis met persoonlijke gewoontes in. Een bestaande `gh-pages`-branch wordt alleen bijgewerkt als die eerder door dit script is aangemaakt; er wordt nooit geforceerd gepusht.
 
-GitHub Pages moet voor de repository zijn ingeschakeld: Settings → Pages → Build and deployment → Source: **Deploy from a branch** → Branch: **gh-pages** → Folder: **/ (root)** → Save. De verwachte bestemming is `https://harberspepijn.github.io/Ritme/`; beschouw die pas als online nadat het adres succesvol gecontroleerd is. Of Pages beschikbaar is voor een private repository hangt af van het GitHub-abonnement. Het deploycommando verandert de zichtbaarheid van de repository niet.
+GitHub Pages moet voor de repository zijn ingeschakeld: Settings → Pages → Build and deployment → Source: **Deploy from a branch** → Branch: **gh-pages** → Folder: **/ (root)** → Save. De app staat online op `https://harberspepijn.github.io/Ritme/`. De openbare pagina, productie-assets en het PWA-manifest zijn gecontroleerd. Of Pages beschikbaar is voor een private repository hangt af van het GitHub-abonnement. Het deploycommando verandert de zichtbaarheid van de repository niet.
 
 Toegang tot Git via de platformproxy staat los van GitHub API-toegang. In een cloudomgeving kan voor Pages-beheer en validatie netwerktoegang nodig zijn tot `api.github.com` en `harberspepijn.github.io`. GitHub CLI gebruikt bestaande authenticatie; zet geen tokens in bestanden of commits.
 
