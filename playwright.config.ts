@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
+const appURL = `http://127.0.0.1:4175${process.env.RITME_BASE_PATH || '/'}`;
 export default defineConfig({
   testDir: './tests/browser',
   fullyParallel: false,
@@ -7,7 +8,7 @@ export default defineConfig({
   timeout: 30000,
   expect: { timeout: 7000 },
   use: {
-    baseURL: 'http://127.0.0.1:4175',
+    baseURL: appURL,
     locale: 'nl-NL',
     timezoneId: 'Europe/Amsterdam',
     launchOptions: {
@@ -28,7 +29,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run build && npm run preview -- --port 4175 --strictPort',
-    url: 'http://127.0.0.1:4175',
+    url: appURL,
     reuseExistingServer: false,
     timeout: 60000,
   },

@@ -33,7 +33,7 @@ async function overflow(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
   await expect(page.getByRole('heading', { name: 'Kleine stappen. Jouw ritme.' })).toBeVisible();
 });
 
@@ -251,7 +251,7 @@ test('verwijderen vraagt bevestiging en bewaren werkt in een tweede tab', async 
 }) => {
   await addHabit(page, 'Even rust');
   const other = await context.newPage();
-  await other.goto('/');
+  await other.goto('./');
   await expect(other.locator('.habit-row')).toContainText('Even rust');
   await page.getByRole('button', { name: 'Even rust: gelukt', exact: true }).click();
   await expect(other.locator('.habit-row.success')).toHaveCount(1);

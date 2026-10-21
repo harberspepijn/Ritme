@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "format": "prettier --write src tests *.ts *.json *.html README.md HANDOFF.md",
-    "format:check": "prettier --check src tests *.ts *.json *.html README.md HANDOFF.md"
+    "format:check": "prettier --check src tests *.ts *.json *.html README.md HANDOFF.md",
+    "deploy:pages": "node scripts/deploy-pages.mjs"
   },
   "dependencies": {
     "idb": "^8.0.3",

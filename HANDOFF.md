@@ -56,3 +56,11 @@ Werk in de bestaande checkout `/workspace/Ritme`. Cloudtaken zijn al geïsoleerd
 ## Eerstvolgende concrete stap
 
 Laat Pepijn de app via een gekozen HTTPS-host op zijn telefoon openen, installeren en enkele echte gewoontes invoeren. Verwerk vervolgens feedback over invoer, volgorde en beweging. Test daarbij iOS/Android-installatie en het echte mobiele toetsenbord. Bouw door op deze code; begin niet opnieuw. Onderzoek meldingen, synchronisatie of native functies pas als aparte uitbreiding.
+
+## Publicatie naar GitHub Pages in voorbereiding
+
+Op verzoek van de gebruiker is een openbare, op verschillende apparaten te openen versie voorbereid. `RITME_BASE_PATH` ondersteunt `/Ritme/`, ook voor manifest, iconen, serviceworker en offline navigatie. De browsersuite is aangepast zodat dezelfde controles op een submap kunnen draaien. `npm run deploy:pages` bouwt en publiceert statische bestanden naar een eigen `gh-pages`-branch, zonder een worktree te maken of repository-zichtbaarheid te wijzigen.
+
+Huidige toegang: Git read en push-dry-run via de bestaande platformauthenticatie werken. GitHub CLI is aanwezig en GH_TOKEN is gezet, maar de daadwerkelijke API-aanroep naar `api.github.com` werd door het netwerkbeleid geweigerd (Forbidden). De omgevingsconfiguratie bevat nu als concept de domeinen `api.github.com` en `harberspepijn.github.io`, met behoud van de bestaande presets. Dit concept is nog geen runtimewijziging. Herhaal de API-aanroep pas na toepassing van de netwerkinstellingen.
+
+Nog te doen: broncode pushen, de gebouwde branch publiceren, GitHub Pages activeren en het daadwerkelijke openbare adres testen. Een URL in de documentatie is tot die controle alleen de verwachte bestemming.

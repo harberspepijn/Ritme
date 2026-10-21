@@ -39,7 +39,7 @@ Een pauze of archivering sluit de periode uit van nieuwe planning; bestaande reg
 
 ## Op je telefoon
 
-Publiceer de inhoud van `dist/` op een statische host met HTTPS, op de hoofdroute `/`. Een productiehosting is niet inbegrepen in deze repository. Daarna kan de browser de app installeren. Op iPhone: Safari → Deel → Zet op beginscherm. De browser bepaalt of en hoe de installatieoptie wordt getoond.
+De app kan op elke statische HTTPS-host worden gepubliceerd. Standaard bouwt hij voor `/`; voor een submap stel je bij het bouwen `RITME_BASE_PATH` in, bijvoorbeeld `/Ritme/`. Manifest, iconen, navigatie en offline cache gebruiken hetzelfde pad. Daarna kan de browser de app installeren. Op iPhone: Safari → Deel → Zet op beginscherm. De browser bepaalt of en hoe de installatieoptie wordt getoond.
 
 Offline functionaliteit is op de productiebuild gecontroleerd in Chromium, met mobiele emulatie en desktop. Installatie op fysieke iOS-/Android-apparaten is nog niet getest. De Vite-ontwikkelserver activeert geen serviceworker.
 
@@ -71,3 +71,17 @@ De tests bestrijken berekeningen, datumgrenzen, planning, doelversies, importval
 - `src/styles.css`: responsieve vormgeving, thema’s en reduced-motion-ondersteuning.
 - `docs/BOUWPLAN.md`: het oorspronkelijke bouwplan.
 - `HANDOFF.md`: actuele voortgang en vervolgwerk.
+
+## Publiceren op GitHub Pages
+
+```sh
+npm run deploy:pages
+```
+
+Het commando controleert dat je werk gecommit is, bouwt met het juiste repositorypad en pusht alleen de gebouwde app naar `gh-pages`. Het bouwt geen geschiedenis met persoonlijke gewoontes in. Een bestaande `gh-pages`-branch wordt alleen bijgewerkt als die eerder door dit script is aangemaakt; er wordt nooit geforceerd gepusht.
+
+GitHub Pages moet voor de repository zijn ingeschakeld: Settings → Pages → Build and deployment → Source: **Deploy from a branch** → Branch: **gh-pages** → Folder: **/ (root)** → Save. De verwachte bestemming is `https://harberspepijn.github.io/Ritme/`; beschouw die pas als online nadat het adres succesvol gecontroleerd is. Of Pages beschikbaar is voor een private repository hangt af van het GitHub-abonnement. Het deploycommando verandert de zichtbaarheid van de repository niet.
+
+Toegang tot Git via de platformproxy staat los van GitHub API-toegang. In een cloudomgeving kan voor Pages-beheer en validatie netwerktoegang nodig zijn tot `api.github.com` en `harberspepijn.github.io`. GitHub CLI gebruikt bestaande authenticatie; zet geen tokens in bestanden of commits.
+
+Een uitgepakte publicatiebuild bevat `deployment.json` met de bijbehorende broncommit. De app vraagt geen account: openen kan op verschillende apparaten, maar gegevens synchroniseren niet automatisch. Gebruik export/import om ze over te zetten.
