@@ -1,83 +1,81 @@
 # Ritme — overdracht
 
-Bijgewerkt: 21 oktober 2026. Eerste bouwronde uitgevoerd vanuit `docs/BOUWPLAN.md`.
+Bijgewerkt: 22 oktober 2026. Doorontwikkeling van de bestaande app; oorspronkelijke opdracht in `docs/BOUWPLAN.md`.
 
-## Wat af is
+**App: https://harberspepijn.github.io/Ritme/**
 
-- Werkende Nederlandstalige React/TypeScript/Vite-app met rustige groene vormgeving, mobiele ondernavigatie, desktopnavigatie, panelen, animaties en reduced motion.
-- Vandaag, Gewoontes en Inzicht; lege eerste start met optionele voorbeelden. Geen ingevulde demo-historie.
-- Vier meetwijzen, snelle invoer, dagcorrecties, ongedaan maken, optioneel werkelijk tijdstip voor ja/nee.
-- Dagelijkse planning, vaste weekdagen en echte weekdoelen. Lokale kalenderdagen, maandag-zondag, onbekende en niet-geplande dagen onderscheiden.
-- Gewoontes aanpassen, pauzeren, hervatten, archiveren en bevestigd verwijderen; optionele reden en eigen reactie op een verleiding.
-- Historische doelversies en snapshots. Gewijzigde doelen/planning vanaf morgen, bij weekplanning vanaf volgende maandag. Naam en toelichtingen veranderen direct. Meetwijze blijft vast.
-- Week-/maandkalenders, passende cijfers per gewoonte, onbekende dagen, gemiddelden van geregistreerde dagen. Geen samengestelde score.
-- IndexedDB, geserialiseerde updates, Web Locks en synchronisatie tussen tabbladen via BroadcastChannel. Bewaarfouten overschrijven de vorige gegevens niet.
-- JSON-export, schemavalidatie en vervangoverzicht vóór import, expliciete bevestiging vóór verwijderen/wissen. Systeem-, licht- en donkerthema.
-- PWA-manifest, PNG-iconen en offline app-shell. Offline lezen, registreren en herladen getest.
+## Update 22 oktober: dagelijks gebruik en inzicht
 
-## Starten
+- Vandaag toont bij bestaande gewoontes een compacte datumkop en voortgang. De lijst begint direct onder de verkorte weekstrip. De grote introductie, plant en suggesties blijven alleen bij een lege start. Ook Gewoontes en Inzicht hebben compactere koppen.
+- Rijen tonen stand/doel, blijven op dezelfde plaats bij registreren en houden dezelfde snelle knoppen na succes. Minimumdoelen: +5/+15 minuten, anders +1/+5. Klikken op de rij opent het totaal met invoerfocus, correcties en bestaande undo. Een ontbrekend numeriek totaal is `—`, niet nul. Vermijdmomenten blijven ook mobiel zichtbaar.
+- De statusfout is in `model.evaluate` opgelost. `statusLabels` staat nu ook in het model. Vandaag zonder registratie = `pending` / Nog open; verstreken lege geplande dag = `unknown` / Onbekend; toekomstige geplande dag = `future`; niet gepland = `off`. Een opgeslagen leeg concept volgt dezelfde regel. Een geregistreerd maximum zonder afronding blijft open, ook na middernacht; maximum/vermijden slagen alleen volgens hun bestaande expliciete bevestiging. Bestaande registraties tijdens een latere pauze blijven zichtbaar.
+- `src/insights.ts` levert de gedeelde numerieke reeksen voor gemiddelden en grafieken. Geen nul invullen voor ontbrekende dagen, concepten of toekomst. Expliciete nul en een expliciet gesloten maximum op nul tellen wel. Correcties worden gesommeerd; snapshots bewaren historische eenheid en doelgrens.
+- `NumericChart.tsx`: compacte SVG-grafieken, doelgrenzen, alleen verbindingslijnen tussen aangrenzende geregistreerde dagen, afzonderlijke grafieken bij verschillende eenheden, voorlopige markering voor vandaag, toegankelijke uitklapbare waardentabel.
+- Periodevergelijkingen zijn beschrijvende gemiddeldeverschillen, geen algemene score of statistische garantie. Alleen verstreken dagen, hetzelfde aantal dagen vanaf het begin van de vorige week/maand; bij ongelijke maandlengten het gezamenlijke aantal dagen. Minimaal 3 registraties en minstens 50% dekking van beschikbare geplande dagen in beide perioden. Doel, eenheid, meetwijze en planning moeten gelijk zijn; anders uitleg. Datumbereiken en aantallen worden vermeld. Vandaag telt nog niet mee in de vergelijking.
+- Toevoegen: richting, naam, meetwijze/doel en planning eerst (dagelijks standaard). Pictogram, richttijd en persoonlijke toelichting onder Optionele details. Alle bestaande instellingen blijven beschikbaar. Sticky opslaanknop, grotere mobiele invoertekst; bij lage viewport geen vaststaande grote paneelkop.
+- Leesbare toelichtingen, Nederlandse enkelvoud/meervoud en decimale gemiddelden. Korte navigatie- en registratieanimaties, zichtbare focus, reduced motion. Een gewoonte aanpassen behoudt nu ook de bestaande lijstpositie.
 
-Werk in de bestaande checkout `/workspace/Ritme`. Cloudtaken zijn al geïsoleerd; maak alleen een extra Git-worktree als de gebruiker daarom vraagt.
+## Gegevens en bestaande functies
 
-- Node 22.12+; getest met Node 24.19.0 en npm 11.9.0. Pin in `.nvmrc`.
-- Dependencies: `npm ci --cache /workspace/.npm-cache --no-fund --no-audit`.
-- Ontwikkelen: `npm run dev -- --port 5173 --strictPort`.
-- Productie/offline controleren: `npm run build`, dan `npm run preview -- --port 4173 --strictPort`.
-- Browsercontroles: `npm run test:e2e` start zelf een aparte productiepreview op poort 4175.
-- Chromium: `/usr/bin/chromium` in deze cloudomgeving. Elders `CHROMIUM_PATH` instellen of `npx playwright install chromium` gebruiken.
-- Servers zijn processen en moeten in een nieuwe sessie opnieuw worden gestart. Een gepubliceerde cloudomgeving is niet hetzelfde als publieke app-hosting.
+**Geen opslagmigratie en geen verandering aan schemaVersion 1, database, object store, sleutels of webadres.** Bestaande gewoontes, logs, doelversies/snapshots, pauzehistorie, thema en exports blijven leesbaar. Geen backend, account, synchronisatie of upload van gebruikersgegevens.
 
-## Omgevingsconfiguratie
+Behouden: vier meetwijzen, dagelijks/vaste weekdagen/weekdoelen, lokale kalender/DST, wijzigingen vanaf morgen of volgende maandag, pauzeren/hervatten/archiveren/verwijderen, gevalideerde import met bevestiging, export, bevestigd wissen, Web Locks en BroadcastChannel, offline app-shell en registratie. Weekdoelen worden niet als dagelijkse verplichtingen behandeld. Een richttijd beoordeelt niet automatisch het resultaat.
 
-`install_script` en `start_skill` zijn als concept opgeslagen in de cloudomgeving. Installatie via het lockfile, productiebuild, tests en beide startcommando’s zijn uitgevoerd. Het concept is nog niet gepubliceerd; de gebruiker kan de instellingen controleren, opslaan en de omgeving publiceren. Dit publiceert geen publieke website.
+PWA-updates wachten tot oude tabbladen gesloten zijn; geen gedwongen herladen tijdens invoer. Persoonlijke opslag hoort bij apparaat/browser/profiel/origin. Export/import is de handmatige overdracht. Geen PIN of versleutelde kluis.
 
-## Gecontroleerd
+## Starten en controleren
 
-- Schone installatie met `npm ci`, productiebuild en TypeScript: geslaagd.
-- Ontwikkelserver: toevoegen en persistentie na herladen in de browser gecontroleerd. Productiepreview: HTML, manifest en serviceworker gecontroleerd.
+Werk in de bestaande checkout `/workspace/Ritme`. Geen extra worktree tenzij de gebruiker dat vraagt. Er zijn geen aanvullende AGENTS.md-instructies gevonden.
+
+Node 22.12+, getest met Node 24.19.0 en npm 11.9.0; `.nvmrc` bevat de versie.
+
+```sh
+npm ci --cache /workspace/.npm-cache --no-fund --no-audit
+npm run dev -- --port 5173 --strictPort
+npm run build
+npm run preview -- --port 4173 --strictPort
+npm test
+RITME_BASE_PATH=/Ritme/ npm run test:e2e
+npm run format:check
+git diff --check
+```
+
+Playwright start zelf een productiepreview op 4175, Chromium via `/usr/bin/chromium` (elders `CHROMIUM_PATH` of Playwright-installatie). Geïsoleerde profielen; tests raken geen persoonlijke browseropslag. Voor de visuele ronde is een aparte preview op 4176 gebruikt met `/Ritme/`; servers moeten in een nieuwe sessie opnieuw gestart worden. Stop geen onbekende bestaande processen.
+
+## Controles in deze ronde
+
 - Formatting en `git diff --check`: geslaagd.
-- Vitest: **31 tests geslaagd**. Vier meetwijzen, lokale kalender/DST, pauzes, archiveren/hervatten, weekdoelen, doelversies, importvalidatie en IndexedDB.
-- Playwright: **22 tests geslaagd** (11 scenario’s op desktop Chromium en mobiele Chromium-emulatie). Volledige invoer/persistentie, correcties, archiveren, export/import, offline herladen en offline bewaren, meerdere tabbladen, bevestigde verwijdering/wissen, datumwisselingen en historische doelen.
-- Axe: geen overtredingen bij de geteste hoofdschermen en panelen, licht/donker, tegen WCAG 2 A/AA, 2.1 AA en 2.2 AA-regels. Dit is geen volledige handmatige toegankelijkheidsaudit.
-- Screenshots visueel bekeken op desktop en mobiel. Geen horizontale overflow op 320/390 px. Opslaan blijft bereikbaar bij een verkleinde viewport; invoerfocus en reduced motion getest.
-- Productieafhankelijkheden: `npm audit --omit=dev --audit-level=high` meldde 0 kwetsbaarheden.
-- Problemen gevonden tijdens testen (serviceworker nam eerste pagina niet over, focus in toevoegpaneel, tekstcontrast) zijn hersteld en opnieuw gecontroleerd.
+- TypeScript en productiebuild voor `/Ritme/`: geslaagd. Alleen bestaande onschuldige Zod-annotatiewaarschuwingen.
+- **39 unit-/opslagtests geslaagd** (29 model, 8 nieuwe inzicht/status, 2 IndexedDB). Onder meer vier meetwijzen, vandaag/verleden/toekomst, datumgrenzen/DST, expliciete bevestiging, nul versus ontbrekend, snapshots/correcties/eenheden, gelijke periodelengten, te weinig gegevens en veranderde doelen.
+- **30 Playwright-tests geslaagd** (15 scenario’s × desktop/mobiele Chromium-emulatie). Na de laatste tekstcorrecties en zichtbare vermijdtelling zijn de 8 betrokken tests gericht herhaald: alle 8 geslaagd.
+- Toevoegen, +5/+15 ook na succes, stabiele rijpositie, invoerfocus, ongedaan maken, corrigeren, herladen, alle meetwijzen, planning, oude doelen, archief/pauze/hervatten/verwijderen, import/export en oude schema-1-export, offline bewaren/herladen, meerdere tabbladen, bevestigd wissen.
+- Nieuwe browsercontroles: dezelfde dagstatus op Vandaag/Inzicht vóór en na lokale middernacht, onbekend/vrij/toekomst onderscheiden, ontbrekende grafiekdag krijgt geen punt of verbindingslijn, echte nul, juiste vergelijking zonder vandaag, toetsenbordbediening van optionele details en behoud van ingevulde details.
+- Axe-controles hoofdschermen en panelen in licht/donker: geen overtredingen binnen geteste WCAG-regels. Geen volledige screenreader-audit.
+- Visueel bekeken: desktop 1440 px, telefoon 390 px, smal 320 px; Vandaag, week-/maandinzicht met meerdere meetwijzen, grafieken en toevoegpaneel. Geen horizontale overflow in de controles. Screenshot-animaties uitgeschakeld om de voltooide toestand te beoordelen.
+- Opslaan bereikbaar bij viewport 320×330; reduced motion en toetsenbordfocus getest. Fysieke iOS/Android-installatie en echte mobiele toetsenborden niet getest.
+- Een nieuwe test herlaadde vóór de asynchrone opslagbevestiging; de test wacht nu op het sluiten van het paneel, zoals de bestaande helpers. Daarna geslaagd.
 
-## Beperkingen en bewuste keuzes
+## Publicatie
 
-- De app staat live op https://harberspepijn.github.io/Ritme/. GitHub Pages gebruikt `gh-pages` en `/ (root)`, met HTTPS. De gebruiker heeft de repository openbaar gemaakt en Pages ingeschakeld. Zie de gecontroleerde publicatiestatus onderaan.
-- Installatie op fysieke iOS-/Android-apparaten en hun echte toetsenborden is niet getest. Browseremulatie en verkleinde viewport zijn wel getest.
-- Gegevens horen bij browser/profiel/origin. Export is de handmatige back-up en overdracht; geen account of automatische synchronisatie.
-- Geen meldingen, automatische schermtijdmeting, websiteblokkade of AI. Een bedtijd is een richttijd: een handmatige ja/nee-keuze bepaalt succes, ook bij 00:30.
-- Een gedeeltelijke week verlaagt het weekdoel niet automatisch; de app legt beperkte beschikbare dagen uit. Maandinzicht voor weekdoelen telt weken die de maand raken.
-- PWA-updates wachten totdat oude tabbladen gesloten zijn. Geen automatische herlaadactie tijdens invoer.
-- Rollup meldt onschuldige opmerkingen over annotaties in Zod; de productiebuild slaagt.
+Repository `harberspepijn/Ritme` is door de gebruiker openbaar gemaakt. Bron staat op `main`, GitHub Pages publiceert `gh-pages` met `/ (root)` en HTTPS. Bestaande publicatieprocedure:
 
-## Eerstvolgende concrete stap
+```sh
+git add <gewijzigde bestanden>
+git commit -m "..."
+git push origin HEAD:main
+npm run deploy:pages
+```
 
-Laat Pepijn de app via een gekozen HTTPS-host op zijn telefoon openen, installeren en enkele echte gewoontes invoeren. Verwerk vervolgens feedback over invoer, volgorde en beweging. Test daarbij iOS/Android-installatie en het echte mobiele toetsenbord. Bouw door op deze code; begin niet opnieuw. Onderzoek meldingen, synchronisatie of native functies pas als aparte uitbreiding.
+Het script vereist een schoon gecommit werkgebied, bouwt voor `/Ritme/`, controleert de beheermarkering en gebruikt normale pushes, nooit force. `deployment.json` bevat de broncommit. Verander zichtbaarheid of Pages-instellingen niet.
 
-## Publicatie naar GitHub Pages — online
+Publicatie van deze update volgt na de laatste gerichte controles; werk deze paragraaf bij met de bevestigde broncommit en openbare verificatie.
 
-**Open de app: https://harberspepijn.github.io/Ritme/**
+De bestaande GitHub-authenticatie werkt via de beheerde proxy. Git/HTTPS normaal gebruiken, geen tokens uitlezen. Voor GitHub-API-verificatie werkte Python urllib met bestaande proxy en CA-verificatie; de CLI gaf eerder Forbidden. Eerste publicatie was bron `8fc717d`, Pages-run `39654000410`; alle 10 publieke buildbestanden waren destijds identiek aan de geteste build.
 
-De gebruiker heeft de repository openbaar gemaakt en GitHub Pages ingeschakeld. API-controle bevestigt: repository publiek, Pages publiek, HTTPS afgedwongen, bron `gh-pages` met `/ (root)`, status `built`. De Pages-workflow is succesvol afgerond: https://github.com/harberspepijn/Ritme/actions/runs/39654000410.
+Rechtstreekse openbare Chromium-controle mislukte eerder op de cloudproxy-CA (`ERR_CERT_AUTHORITY_INVALID`). Een permanente truststore-wijziging is eerder door automatische goedkeuringscontrole afgewezen; die is niet uitgevoerd en mag niet via een omweg worden herhaald. TLS-verificatie blijft aan. Veilige publicatiecontrole: publieke HTTPS-bestanden met de bestaande Python-trust ophalen en hashen tegen de lokaal in Chromium geteste productiebuild. Dit is geen probleem met het publieke Pages-certificaat.
 
-De gewone openbare URL geeft **HTTP 200** en de Ritme-pagina. De eerste HTTP 404 was een negatieve cache; aanvragen met een verse query toonden direct de gepubliceerde app. De canonieke URL is daarna ook met HTTP 200 gecontroleerd.
+## Cloudconfiguratie en vervolg
 
-Alle **10 bestanden** van de productiebuild zijn via HTTPS opgehaald en met SHA-256 vergeleken met de lokaal geteste build: HTML, JS, CSS, SVG/PNG-iconen, manifest, registratiescript, serviceworker en Workbox. Alles is identiek. `deployment.json` bevestigt broncommit `8fc717d0db48286b6a0ab201fd0322651dbf8024` en basispad `/Ritme/`. Manifest start_url en scope zijn correct. Alle **22 browsertests** zijn eerder op precies deze appbuild onder `/Ritme/` geslaagd, inclusief offline gebruik, mobiele/desktopinteracties en toegankelijkheid.
+Installatie- en startinstructies zijn eerder als cloudconcept opgeslagen, los van websitehosting. Bestaande instructies moeten worden behouden: npm ci/build/test, bestaande checkout, geen gebruikersgegevens/tokens toevoegen. Het opslaan/publiceren van een cloudconfiguratie is niet nodig om de online app te openen.
 
-De extra browsertest rechtstreeks tegen de openbare URL kon in deze cloud niet draaien: Chromium vertrouwt de CA van de cloudproxy niet (`ERR_CERT_AUTHORITY_INVALID`). Automatische goedkeuringscontrole wees het toevoegen van die CA aan de blijvende Chromium-truststore af vanwege de bredere impact op toekomstig browserverkeer. Er is geen truststore gewijzigd en TLS-verificatie is nergens uitgezet. De veiligere controle gebruikte de bestaande, correct geconfigureerde HTTPS-verificatie in Python en vergeleek de publieke bestanden met de al in de browser geteste build. Dit is geen fout in het publieke GitHub Pages-certificaat.
-
-`npm run deploy:pages` is tweemaal uitgevoerd: eerste branchpublicatie en een normale vervolgupdate zonder force-push. De broncode staat op `main`. Toekomstige updates: commit bronwijzigingen, push `main`, voer `npm run deploy:pages` uit en controleer de openbare build. Documentatiewijzigingen na de publicatie vereisen geen app-rebuild.
-
-De GitHub-API is via de bestaande HTTPS-proxy bruikbaar; de CLI gaf eerder Forbidden en de private Pages-API weigerde de integratie. Na het openbaar maken kan de Pages-status worden gelezen. Geen extra tokens of accounts zijn toegevoegd. De opgeslagen cloudstartinstructies zijn als concept bijgewerkt; websitehosting staat los van het publiceren van een cloudomgeving.
-
-### Gebruik op apparaten
-
-- Android: open de link in Chrome, menu ⋮ → App installeren of Toevoegen aan startscherm.
-- iPhone/iPad: open in Safari, Deel → Zet op beginscherm.
-- Desktop: open de link in een moderne browser; installatie is afhankelijk van de browser.
-- Gegevens blijven per apparaat/browser lokaal. Export/import is beschikbaar; geen automatische synchronisatie.
-
-Eerstvolgende stap: Pepijn laat de live app op zijn eigen telefoon installeren en voert echte gewoontes in. Verwerk daarna gebruikservaringen. Controleer installatie en het echte mobiele toetsenbord op fysieke iOS-/Android-apparaten.
+Eerstvolgend: gebruikservaring op een fysieke telefoon toetsen, inclusief echt toetsenbord en installatie. Eventuele meldingen, synchronisatie, PIN of native functies blijven aparte uitbreidingen. Bouw verder op deze code en bescherm bestaande opslag.

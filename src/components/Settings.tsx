@@ -125,11 +125,15 @@ export default function Settings({
             <div className="import-preview">
               <h4>Bestand gecontroleerd</h4>
               <p>
-                {candidate.habits.length} gewoontes · {candidate.logs.length} dagregistraties
+                {candidate.habits.length} {candidate.habits.length === 1 ? 'gewoonte' : 'gewoontes'}{' '}
+                · {candidate.logs.length}{' '}
+                {candidate.logs.length === 1 ? 'dagregistratie' : 'dagregistraties'}
               </p>
               <p>
-                Dit vervangt je huidige {data.habits.length} gewoontes en {data.logs.length}{' '}
-                dagregistraties. Exporteer eerst als je die wilt bewaren.
+                Dit vervangt je huidige {data.habits.length}{' '}
+                {data.habits.length === 1 ? 'gewoonte' : 'gewoontes'} en {data.logs.length}{' '}
+                {data.logs.length === 1 ? 'dagregistratie' : 'dagregistraties'}. Exporteer eerst als
+                je die wilt bewaren.
               </p>
               <div className="settings-actions">
                 <button className="button secondary" onClick={() => setCandidate(null)}>

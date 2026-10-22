@@ -36,6 +36,7 @@ import {
   monday,
   newLog,
   scheduleText,
+  statusLabels,
   updateLog,
   type Data,
   type Habit,
@@ -46,7 +47,7 @@ import { HabitIcon, Mark } from './components/Icon';
 import HabitForm, { examples, type Seed } from './components/HabitForm';
 import HabitRow from './components/HabitRow';
 import LogEditor from './components/LogEditor';
-import Insights, { statusLabels } from './components/Insights';
+import Insights from './components/Insights';
 import Modal from './components/Modal';
 import Settings from './components/Settings';
 
@@ -235,7 +236,7 @@ export default function App() {
       setToast({ text: 'Deze gewoonte was op deze dag niet gepland.' });
     }
   }
-  function quick(habit: Habit) {
+  function quick(habit: Habit, amount?: number) {
     action(
       (d) => {
         const current = d.habits.find((h) => h.id === habit.id);
@@ -243,16 +244,23 @@ export default function App() {
         return updateLog(d, current, day, (log) =>
           log.snapshot.kind === 'binary'
             ? { ...log, answer: true }
-            : addAmount(log, log.snapshot.unit === 'minuten' ? 5 : 1),
+            : log.snapshot.kind === 'minimum'
+              ? addAmount(log, amount ?? (log.snapshot.unit === 'minuten' ? 5 : 1))
+              : log,
         );
       },
-      'Een kleine stap, vastgelegd.',
+      amount ? `+${amount} vastgelegd voor ${habit.name}.` : `${habit.name}: gelukt.`,
       true,
     );
   }
   async function saveHabit(habit: Habit) {
     await commit(
-      (d) => ({ ...d, habits: [...d.habits.filter((h) => h.id !== habit.id), habit] }),
+      (d) => ({
+        ...d,
+        habits: d.habits.some((h) => h.id === habit.id)
+          ? d.habits.map((h) => (h.id === habit.id ? habit : h))
+          : [...d.habits, habit],
+      }),
       'Je gewoonte is bewaard.',
     );
     setOverlay(null);
@@ -360,7 +368,10 @@ export default function App() {
           </button>
         </div>
       </header>
-      <main id="main" className={`main-content page-${tab}`}>
+      <main
+        id="main"
+        className={`main-content page-${tab} ${data.habits.length ? 'has-habits' : ''}`}
+      >
         <div className="page-heading">
           <div>
             <p className="eyebrow">
@@ -371,12 +382,24 @@ export default function App() {
                   : 'KIJK EENS HOEVER JE BENT'}
             </p>
             <h1>
-              {tab === 'today' ? (
+              {tab === 'today' && data.habits.length > 0 ? (
+                day === today ? (
+                  'Vandaag'
+                ) : (
+                  'Jouw dag'
+                )
+              ) : tab === 'today' ? (
                 <>
                   Kleine stappen.
                   <br />
                   <em>Jouw ritme.</em>
                 </>
+              ) : data.habits.length > 0 ? (
+                tab === 'habits' ? (
+                  'Jouw gewoontes'
+                ) : (
+                  'Jouw inzicht'
+                )
               ) : tab === 'habits' ? (
                 <>
                   Wat je aandacht
@@ -393,7 +416,13 @@ export default function App() {
             </h1>
             <p className="page-intro">
               {tab === 'today'
-                ? 'Je hoeft niet alles te doen. Begin met iets kleins.'
+                ? data.habits.length
+                  ? daily.length
+                    ? `${complete} van ${daily.length} afgerond${flexible.length ? ` · ${flexible.length} met een weekdoel` : ''}`
+                    : flexible.length
+                      ? 'Deze week: kies jouw momenten.'
+                      : 'Geen gewoontes gepland voor deze dag.'
+                  : 'Je hoeft niet alles te doen. Begin met iets kleins.'
                 : tab === 'habits'
                   ? 'Meer van wat goed voelt. Minder van wat je afleidt.'
                   : 'Geen perfecte reeks nodig. Elke bewuste stap telt.'}
@@ -485,7 +514,7 @@ export default function App() {
                   );
                 })}
               </div>
-              <div className="list-heading">
+              <div className="list-heading daily-list-heading">
                 <h2>
                   {day === today
                     ? 'Vandaag'
@@ -520,7 +549,7 @@ export default function App() {
                     day={day}
                     today={today}
                     onOpen={() => openLog(h, day)}
-                    onQuick={() => quick(h)}
+                    onQuick={(amount) => quick(h, amount)}
                     disabled={pending > 0}
                   />
                 ))}
@@ -569,7 +598,7 @@ export default function App() {
                         day={day}
                         today={today}
                         onOpen={() => openLog(h, day)}
-                        onQuick={() => quick(h)}
+                        onQuick={(amount) => quick(h, amount)}
                         disabled={pending > 0}
                       />
                     ))}
@@ -591,7 +620,7 @@ export default function App() {
                     <strong>Nog even terug naar gisteren?</strong>
                     <small>
                       {yesterdayOpen} {yesterdayOpen === 1 ? 'gewoonte staat' : 'gewoontes staan'}{' '}
-                      nog open. Je kunt ze rustig bijwerken.
+                      nog niet bevestigd. Je kunt ze rustig bijwerken.
                     </small>
                   </span>
                   <ChevronRight size={18} />
@@ -605,41 +634,43 @@ export default function App() {
                 </button>
               </div>
             </section>
-            <aside className="today-aside">
-              <div className="reflection">
-                <span className="eyebrow">OP JOUW TEMPO</span>
-                <Botanical />
-                <h2>
-                  Groei zit in
-                  <br />
-                  het kleine.
-                </h2>
-                <p>
-                  Niet elke dag hoeft perfect.
-                  <br />
-                  Er even bij stilstaan telt ook.
-                </p>
-                <div className="reflection-line" />
-                <span className="reflection-caption">EEN BEETJE AANDACHT, ELKE DAG.</span>
-              </div>
-              <div className="suggestions">
-                <div className="aside-title">
-                  <h3>Een idee om mee te beginnen</h3>
-                  <ArrowUpRight size={16} />
+            {data.habits.length === 0 && (
+              <aside className="today-aside">
+                <div className="reflection">
+                  <span className="eyebrow">OP JOUW TEMPO</span>
+                  <Botanical />
+                  <h2>
+                    Groei zit in
+                    <br />
+                    het kleine.
+                  </h2>
+                  <p>
+                    Niet elke dag hoeft perfect.
+                    <br />
+                    Er even bij stilstaan telt ook.
+                  </p>
+                  <div className="reflection-line" />
+                  <span className="reflection-caption">EEN BEETJE AANDACHT, ELKE DAG.</span>
                 </div>
-                {examples.map((seed) => (
-                  <button
-                    key={seed.name}
-                    className="suggestion"
-                    onClick={() => setOverlay({ type: 'form', seed })}
-                  >
-                    <HabitIcon name={seed.icon} size={18} />
-                    <span>{seed.name}</span>
-                    <Plus size={16} />
-                  </button>
-                ))}
-              </div>
-            </aside>
+                <div className="suggestions">
+                  <div className="aside-title">
+                    <h3>Een idee om mee te beginnen</h3>
+                    <ArrowUpRight size={16} />
+                  </div>
+                  {examples.map((seed) => (
+                    <button
+                      key={seed.name}
+                      className="suggestion"
+                      onClick={() => setOverlay({ type: 'form', seed })}
+                    >
+                      <HabitIcon name={seed.icon} size={18} />
+                      <span>{seed.name}</span>
+                      <Plus size={16} />
+                    </button>
+                  ))}
+                </div>
+              </aside>
+            )}
           </div>
         )}
         {tab === 'habits' && (

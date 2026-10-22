@@ -21,7 +21,17 @@ export default function LogEditor({
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const g = log.snapshot;
-  const status = evaluate(habit, day, log);
+  const numeric = g.kind === 'minimum' || g.kind === 'maximum';
+  const status = evaluate(
+    habit,
+    day,
+    numeric && value.trim() && Number.isFinite(Number(value))
+      ? {
+          ...log,
+          events: [{ id: 'preview', at: log.updatedAt, amount: Number(value) }],
+        }
+      : log,
+  );
   function amount(n: number) {
     try {
       const next = addAmount(log, n);
@@ -124,6 +134,7 @@ export default function LogEditor({
                   <Minus size={20} />
                 </button>
                 <input
+                  data-initial-focus
                   type="number"
                   inputMode="decimal"
                   min="0"
@@ -179,7 +190,7 @@ export default function LogEditor({
           <>
             <div className="avoid-count">
               <strong>{total(log)}</strong>
-              <span>geregistreerde {total(log) === 1 ? 'moment' : 'momenten'}</span>
+              <span>{total(log) === 1 ? 'geregistreerd moment' : 'geregistreerde momenten'}</span>
             </div>
             <div className="binary-options">
               <button onClick={() => amount(1)}>
@@ -208,7 +219,8 @@ export default function LogEditor({
               </>
             ) : (
               <p className="field-note">
-                Bevestig alleen als de dag voorbij is. Zonder bevestiging blijft deze dag onbekend.
+                Bevestig alleen als de dag voorbij is. Vandaag blijft open; een verstreken dag
+                zonder bevestiging is onbekend.
               </p>
             )}
           </>
@@ -239,7 +251,12 @@ export default function LogEditor({
                     </span>
                     <strong>
                       {e.amount >= 0 ? '+' : ''}
-                      {e.amount} {g.kind === 'avoid' ? 'moment(en)' : g.unit}
+                      {e.amount}{' '}
+                      {g.kind === 'avoid'
+                        ? Math.abs(e.amount) === 1
+                          ? 'moment'
+                          : 'momenten'
+                        : g.unit}
                     </strong>
                   </li>
                 ))}

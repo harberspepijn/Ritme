@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -20,18 +20,14 @@ import {
   monday,
   total,
   weekSummary,
+  statusLabels,
   type Data,
   type Habit,
   type Status,
 } from '../model';
 import { HabitIcon } from './Icon';
-export const statusLabels: Record<Status, string> = {
-  success: 'Gelukt',
-  failed: 'Niet gelukt',
-  unknown: 'Onbekend',
-  pending: 'Nog open',
-  off: 'Niet gepland',
-};
+import NumericChart from './NumericChart';
+import { numericSeries } from '../insights';
 export function Calendar({
   data,
   habit,
@@ -60,12 +56,12 @@ export function Calendar({
           <span key={`pad-${i}`} />
         ))}
         {days.map((day) => {
-          const s = day > today ? 'off' : evaluate(habit, day, findLog(data, habit.id, day), today);
+          const s = evaluate(habit, day, findLog(data, habit.id, day), today);
           return (
             <button
               key={day}
               className={`calendar-day ${s} ${day === today ? 'is-today' : ''}`}
-              disabled={s === 'off'}
+              disabled={s === 'off' || s === 'future'}
               aria-label={`${dateLabel(day)}: ${statusLabels[s]}`}
               onClick={() => onDay(day)}
             >
@@ -77,6 +73,8 @@ export function Calendar({
                   <Minus size={10} />
                 ) : s === 'unknown' ? (
                   '·'
+                ) : s === 'future' ? (
+                  '›'
                 ) : s === 'pending' ? (
                   '◦'
                 ) : (
@@ -93,7 +91,7 @@ export function Calendar({
 export function Legend() {
   return (
     <div className="legend">
-      {(['success', 'failed', 'unknown', 'pending', 'off'] as Status[]).map((s) => (
+      {(['success', 'failed', 'unknown', 'pending', 'future', 'off'] as Status[]).map((s) => (
         <span key={s}>
           <i className={s}>
             {s === 'success'
@@ -102,9 +100,11 @@ export function Legend() {
                 ? '−'
                 : s === 'pending'
                   ? '◦'
-                  : s === 'unknown'
-                    ? '·'
-                    : ''}
+                  : s === 'future'
+                    ? '›'
+                    : s === 'unknown'
+                      ? '·'
+                      : ''}
           </i>
           {statusLabels[s]}
         </span>
@@ -126,6 +126,12 @@ export default function Insights({
   const [period, setPeriod] = useState<'week' | 'month'>('week');
   const [anchor, setAnchor] = useState(today);
   const [selected, setSelected] = useState('all');
+  const lastToday = useRef(today);
+  useEffect(() => {
+    const previous = lastToday.current;
+    setAnchor((a) => (a === previous ? today : a));
+    lastToday.current = today;
+  }, [today]);
   const start = period === 'week' ? monday(anchor) : `${anchor.slice(0, 7)}-01`;
   const end =
     period === 'week'
@@ -216,15 +222,13 @@ export default function Insights({
             const logs = scheduled
               .map((d) => findLog(data, h.id, d))
               .filter((l) => l !== undefined);
-            const numeric = logs.filter(
-              (l) =>
-                (l.snapshot.kind === 'minimum' || l.snapshot.kind === 'maximum') &&
-                (l.events.length > 0 || l.closed),
+            const numeric = numericSeries(data, h, start, end, today).filter(
+              (p) => p.value !== null,
             );
             const average = numeric.length
-              ? Math.round((numeric.reduce((n, l) => n + total(l), 0) / numeric.length) * 10) / 10
+              ? Math.round((numeric.reduce((n, p) => n + p.value!, 0) / numeric.length) * 10) / 10
               : null;
-            const sameUnit = numeric.every((l) => l.snapshot.unit === goal.unit);
+            const sameUnit = numeric.every((p) => p.goal?.unit === goal.unit);
             return (
               <article className="insight-card" key={h.id}>
                 <header>
@@ -250,7 +254,9 @@ export default function Insights({
                             (goal.schedule.type === 'weekly' ? goal.schedule.count : 0)}
                         </span>
                       </strong>
-                      <span>behaalde dagen deze week</span>
+                      <span>
+                        behaalde {(weeks[0]?.success ?? 0) === 1 ? 'dag' : 'dagen'} deze week
+                      </span>
                     </>
                   ) : weekly ? (
                     <>
@@ -266,17 +272,18 @@ export default function Insights({
                         {successes}
                         <span> / {scheduled.length}</span>
                       </strong>
-                      <span>geplande dagen gelukt</span>
+                      <span>geplande {scheduled.length === 1 ? 'dag' : 'dagen'} gelukt</span>
                     </>
                   )}
                 </div>
                 <p className="insight-context">
-                  {unknown} {weekly ? 'vrije dagen zonder invoer' : 'dagen onbekend'}
+                  {unknown} {unknown === 1 ? 'dag onbekend' : 'dagen onbekend'}
                   {pending > 0 && ` · ${pending} nog open`}
                   {average !== null && sameUnit && (
                     <>
                       <br />
-                      Gemiddeld {average} {goal.unit} · {numeric.length} geregistreerde dagen
+                      Gemiddeld {average.toLocaleString('nl-NL')} {goal.unit} · {numeric.length}{' '}
+                      geregistreerde {numeric.length === 1 ? 'dag' : 'dagen'}
                     </>
                   )}
                   {average !== null && !sameUnit && (
@@ -288,7 +295,9 @@ export default function Insights({
                   {goal.kind === 'avoid' && (
                     <>
                       <br />
-                      {logs.reduce((sum, l) => sum + total(l), 0)} momenten geregistreerd
+                      {logs.reduce((sum, l) => sum + total(l), 0)}{' '}
+                      {logs.reduce((sum, l) => sum + total(l), 0) === 1 ? 'moment' : 'momenten'}{' '}
+                      geregistreerd
                     </>
                   )}
                 </p>
@@ -298,6 +307,16 @@ export default function Insights({
                     {weeks.some((w) => w.eligible < w.target) &&
                       ' Deze gedeeltelijke week heeft minder beschikbare dagen dan je weekdoel.'}
                   </p>
+                )}
+                {(goal.kind === 'minimum' || goal.kind === 'maximum') && (
+                  <NumericChart
+                    data={data}
+                    habit={h}
+                    start={start}
+                    end={end}
+                    today={today}
+                    period={period}
+                  />
                 )}
                 <Calendar
                   data={data}
@@ -313,8 +332,10 @@ export default function Insights({
       </div>
       <Legend />
       <p className="insight-footnote">
-        Alleen wat je zelf registreert, telt mee. Een lege dag blijft onbekend; gemiddelden
-        gebruiken alleen geregistreerde dagen.
+        Alleen wat je zelf registreert, telt mee. Vandaag zonder invoer is nog open. Maximum- en
+        vermijddoelen vereisen je bevestiging. Een verstreken geplande dag zonder invoer is
+        onbekend. Toekomstige dagen tellen nog niet mee. Gemiddelden gebruiken alleen geregistreerde
+        dagen.
       </p>
     </div>
   );

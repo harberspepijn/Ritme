@@ -24,12 +24,12 @@ Gebruik de bestaande checkout in `/workspace/Ritme` in de cloudomgeving. Een apa
 
 ## Wat werkt
 
-- **Vandaag:** weekstrip, een datum kiezen, terugblik op gisteren, snelle registratie en correctie. Ongedaan maken is 10 seconden beschikbaar; oudere registraties zijn ook later te wijzigen.
+- **Vandaag:** compacte datumkop en dagelijkse voortgang zodra er gewoontes zijn, vaste rijvolgorde en direct zichtbare stand/doel. Minimumdoelen hebben +5/+15 minuten (of +1/+5 voor andere eenheden); de rij opent directe getalinvoer en correcties. Ongedaan maken is 10 seconden beschikbaar; oudere registraties zijn ook later te wijzigen.
 - **Vier meetwijzen:** ja/nee met optioneel tijdstip, minimum, maximum met expliciet afronden, vermijden met momenten en dagbevestiging.
-- **Gewoontes:** toevoegen, aanpassen, pauzeren, hervatten, archiveren en bevestigd verwijderen. Optionele reden en een eigen reactie op een verleiding.
+- **Gewoontes:** toevoegen met eerst richting, naam, meetwijze, doel en planning; pictogram, richttijd en persoonlijke details zijn uitklapbaar. Aanpassen, pauzeren, hervatten, archiveren en bevestigd verwijderen. Optionele reden en een eigen reactie op een verleiding.
 - **Planning:** dagelijks, vaste weekdagen, of een aantal behaalde dagen per kalenderweek. Een week loopt maandag t/m zondag. Vrije dagen bij weekdoelen zijn geen dagelijkse verplichtingen.
-- **Historie:** onbekend, open, gelukt, niet gelukt en niet gepland blijven onderscheiden. Datumkeuze gebruikt de lokale kalender, ook bij zomer-/wintertijd. Het tijdstip bij ja/nee bepaalt nooit automatisch succes.
-- **Inzicht:** week/maand, kalender per gewoonte, geregistreerde gemiddelden en onbekende dagen. Weekdoelen tonen behaalde dagen of bevestigde weken.
+- **Historie:** vandaag zonder invoer is nog open, een verstreken geplande dag zonder invoer onbekend, een toekomstige geplande dag toekomstig en een vrije dag niet gepland. Alle schermen delen dezelfde beoordeling en statuslabels. Datumkeuze gebruikt de lokale kalender, ook bij zomer-/wintertijd. Het tijdstip bij ja/nee bepaalt nooit automatisch succes.
+- **Inzicht:** week/maand, kalender per gewoonte, geregistreerde gemiddelden, numerieke grafieken met historische doelgrenzen en exacte waarden in een uitklapbare tabel. Ontbrekende waarden blijven gaten, expliciete nulwaarden tellen wel mee. Vergelijkingen gebruiken een even lang deel van de vorige periode, zonder de lopende dag; minimaal 3 registraties en minstens 50% dekking per periode zijn vereist. Bij verschillende doelen, eenheden of planningen volgt geen vergelijking. Weekdoelen tonen behaalde dagen of bevestigde weken.
 - **Gegevens:** gevalideerde JSON-import met overzicht en expliciete vervangbevestiging, JSON-export, bevestigd wissen. Thema systeem/licht/donker.
 - **PWA:** manifest, app-iconen en een offline app-shell. Registratie werkt offline na het eerste volledige bezoek. Updates worden actief wanneer oude tabbladen gesloten zijn en de app opnieuw wordt geopend.
 
@@ -67,6 +67,7 @@ De tests bestrijken berekeningen, datumgrenzen, planning, doelversies, importval
 ## Opbouw
 
 - `src/model.ts`: kalender, gegevensschema, planning en beoordelingen.
+- `src/insights.ts`: echte numerieke waarden, historische doelgrenzen en vergelijkbare perioden.
 - `src/storage.ts`: gevalideerde IndexedDB-opslag.
 - `src/App.tsx`: navigatie en geserialiseerde opslagbewerkingen; Web Locks en BroadcastChannel voorkomen overschrijven tussen tabbladen in ondersteunde browsers.
 - `src/components/`: invoer, historie/inzicht, instellingen en dialoogvensters.

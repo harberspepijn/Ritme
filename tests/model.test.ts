@@ -69,10 +69,16 @@ describe('lokale kalender', () => {
   });
 });
 describe('vier meetwijzen', () => {
-  it.each(['binary', 'minimum', 'maximum', 'avoid'] as Kind[])('%s begint onbekend', (kind) => {
-    expect(evaluate(habit(kind), day, undefined, day)).toBe('unknown');
-    expect(evaluate(habit(kind), day, log(kind), day)).toBe('unknown');
-  });
+  it.each(['binary', 'minimum', 'maximum', 'avoid'] as Kind[])(
+    '%s onderscheidt vandaag, verleden en toekomst',
+    (kind) => {
+      expect(evaluate(habit(kind), day, undefined, day)).toBe('pending');
+      expect(evaluate(habit(kind), day, undefined, addDays(day, 1))).toBe('unknown');
+      expect(evaluate(habit(kind), addDays(day, 1), undefined, day)).toBe('future');
+      expect(evaluate(habit(kind), day, log(kind), day)).toBe('pending');
+      expect(evaluate(habit(kind), day, log(kind), addDays(day, 1))).toBe('unknown');
+    },
+  );
   it('beoordeelt ja/nee alleen op expliciete keuze, ook na middernacht', () => {
     const h = habit('binary');
     h.versions[0].time = '21:15';
@@ -83,7 +89,7 @@ describe('vier meetwijzen', () => {
       'success',
     );
     expect(evaluate(h, day, { ...log('binary'), answer: null, time: '20:00' }, day)).toBe(
-      'unknown',
+      'pending',
     );
   });
   it('telt meerdere registraties en correcties, ook nul is geregistreerd', () => {
@@ -123,7 +129,7 @@ describe('vier meetwijzen', () => {
     expect(l.closed).toBe(false);
     expect(evaluate(h, day, { ...l, closed: true }, day)).toBe('failed');
     l = addAmount(l, -1);
-    expect(evaluate(h, day, l, day)).toBe('unknown');
+    expect(evaluate(h, day, l, day)).toBe('pending');
     expect(evaluate(h, day, { ...l, closed: true }, day)).toBe('success');
   });
 });
@@ -174,7 +180,7 @@ describe('planning en historie', () => {
     }));
     const d = withData(h, logs);
     const summary = weekSummary(d, h, day, '2026-10-25');
-    expect(summary).toMatchObject({ target: 3, success: 3, unknown: 4, reached: true });
+    expect(summary).toMatchObject({ target: 3, success: 3, unknown: 3, reached: true });
     expect(weekSummary(d, h, '2026-10-26', '2026-10-28').success).toBe(0);
   });
   it('wijziging vanaf volgende maandag verandert de oude week niet', () => {

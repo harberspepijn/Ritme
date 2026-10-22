@@ -225,22 +225,13 @@ export default function HabitForm({
             </datalist>
           </label>
         )}
-        {kind === 'binary' && (
-          <label>
-            Gewenst tijdstip <span className="optional">optioneel</span>
-            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-            <span className="field-note">
-              Een richttijd, geen melding. Je geeft zelf aan of het gelukt is, ook na middernacht.
-            </span>
-          </label>
-        )}
         {kind === 'maximum' && (
           <p className="info-note">Je rondt de dag zelf af. Tot die tijd is je totaal voorlopig.</p>
         )}
         {kind === 'avoid' && (
           <p className="info-note">
-            Bevestig een dag zonder momenten, of registreer een moment. Een lege dag blijft
-            onbekend.
+            Bevestig een dag zonder momenten, of registreer een moment. Vandaag blijft open tot je
+            iets bevestigt; een verstreken lege dag is onbekend.
           </p>
         )}
         <label>
@@ -298,29 +289,38 @@ export default function HabitForm({
             <span className="field-note">Maandag t/m zondag. Elke behaalde dag telt één keer.</span>
           </label>
         )}
-        <fieldset className="icon-picker">
-          <legend>Pictogram</legend>
-          <div>
-            {icons.map((i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={labels[i]}
-                aria-pressed={icon === i}
-                onClick={() => setIcon(i)}
-              >
-                <HabitIcon name={i} />
-              </button>
-            ))}
-          </div>
-        </fieldset>
         <details className="optional-fields">
           <summary>
-            Maak het persoonlijk{' '}
+            Optionele details{' '}
             <span>
               optioneel <ArrowUpRight size={14} />
             </span>
           </summary>
+          {kind === 'binary' && (
+            <label>
+              Gewenst tijdstip <span className="optional">optioneel</span>
+              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+              <span className="field-note">
+                Een richttijd, geen melding. Je geeft zelf aan of het gelukt is, ook na middernacht.
+              </span>
+            </label>
+          )}
+          <fieldset className="icon-picker">
+            <legend>Pictogram</legend>
+            <div>
+              {icons.map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  aria-label={labels[i]}
+                  aria-pressed={icon === i}
+                  onClick={() => setIcon(i)}
+                >
+                  <HabitIcon name={i} />
+                </button>
+              ))}
+            </div>
+          </fieldset>
           <label>
             Waarom wil je dit?
             <textarea

@@ -47,7 +47,7 @@ test('lege start, toevoegen, afvinken, ongedaan maken, corrigeren en herladen', 
   await page.getByRole('button', { name: 'Een boek openen: gelukt', exact: true }).click();
   await expect(page.locator('.habit-row.success')).toHaveCount(1);
   await page.getByRole('button', { name: 'Ongedaan maken' }).click();
-  await expect(page.locator('.habit-row.unknown')).toHaveCount(1);
+  await expect(page.locator('.habit-row.pending')).toHaveCount(1);
   await editor(page, 'Een boek openen');
   await page.getByRole('button', { name: 'Niet gelukt', exact: true }).click();
   await saveLog(page);
@@ -76,7 +76,7 @@ test('minimum, maximum en vermijden hebben passende invoer en blijven bewaard', 
   await saveLog(page);
   await expect(page.locator('.habit-row.pending')).toHaveCount(1);
   await addHabit(page, 'Telefoon', 'maximum');
-  await expect(page.locator('.habit-row').filter({ hasText: 'Telefoon' })).toHaveClass(/unknown/);
+  await expect(page.locator('.habit-row').filter({ hasText: 'Telefoon' })).toHaveClass(/pending/);
   await editor(page, 'Telefoon');
   await page.getByRole('spinbutton').fill('15');
   await saveLog(page);
@@ -103,6 +103,9 @@ test('minimum, maximum en vermijden hebben passende invoer en blijven bewaard', 
   await expect(page.locator('.habit-row').filter({ hasText: 'Niet scrollen' })).toHaveClass(
     /failed/,
   );
+  await expect(
+    page.locator('.habit-row').filter({ hasText: 'Niet scrollen' }).locator('.row-goal'),
+  ).toContainText('1 moment');
   await page.reload();
   await expect(page.locator('.habit-row.failed')).toHaveCount(2);
   await editor(page, 'Niet scrollen');
@@ -360,5 +363,161 @@ test('toegankelijkheid van de hoofdschermen en panelen in licht en donker', asyn
   await scan();
   await nav(page, 'Vandaag');
   await scan();
+  await overflow(page);
+});
+
+test('compacte dag, snelle minimuminvoer en stabiele rijvolgorde', async ({ page }) => {
+  await addHabit(page, 'Lezen', 'minimum');
+  await addHabit(page, 'Naar buiten');
+  await expect(page.locator('.page-heading h1')).toHaveText('Vandaag');
+  await expect(page.locator('.today-aside')).toHaveCount(0);
+  const rows = page.locator('.habit-row');
+  const first = await rows.first().boundingBox();
+  const second = await rows.nth(1).boundingBox();
+  expect(first!.y).toBeLessThan(430);
+  await page.getByRole('button', { name: 'Lezen: 5 toevoegen', exact: true }).click();
+  await expect(rows.first()).toContainText('5 / 20');
+  await page.getByRole('button', { name: 'Lezen: 15 toevoegen', exact: true }).click();
+  await expect(rows.first()).toHaveClass(/success/);
+  await expect(rows.first()).toContainText('20 / 20');
+  expect((await rows.nth(1).boundingBox())!.y).toBeCloseTo(second!.y, 0);
+  await expect(rows.nth(1)).toContainText('Naar buiten');
+  await page.getByRole('button', { name: 'Lezen: 15 toevoegen', exact: true }).click();
+  await expect(rows.first()).toContainText('35 / 20');
+  await page.getByRole('button', { name: 'Ongedaan maken' }).click();
+  await expect(rows.first()).toContainText('20 / 20');
+  await editor(page, 'Lezen');
+  await expect(page.getByRole('spinbutton')).toBeFocused();
+  await page.getByRole('spinbutton').fill('0');
+  await saveLog(page);
+  await page.reload();
+  await expect(rows.first()).toContainText('0 / 20');
+  await expect(rows.first()).toHaveClass(/pending/);
+  await page.setViewportSize({ width: 320, height: 568 });
+  await overflow(page);
+});
+
+test('Vandaag en Inzicht delen open, onbekend en toekomst rond middernacht', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-22T23:59:00+02:00') });
+  await page.reload();
+  await addHabit(page, 'Leeg vandaag');
+  await expect(page.locator('.habit-row')).toContainText('Nog open');
+  await nav(page, 'Inzicht');
+  await expect(
+    page.getByRole('button', { name: '22 oktober: Nog open', exact: true }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: '23 oktober: Toekomstig', exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: '21 oktober: Niet gepland', exact: true }),
+  ).toBeDisabled();
+  await expect(page.locator('.insight-context')).toContainText('0 dagen onbekend · 1 nog open');
+  await page.clock.fastForward(120000);
+  await expect(
+    page.getByRole('button', { name: '22 oktober: Onbekend', exact: true }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: '23 oktober: Nog open', exact: true }),
+  ).toBeEnabled();
+  await expect(page.locator('.insight-context')).toContainText('1 dag onbekend · 1 nog open');
+  await nav(page, 'Vandaag');
+  await expect(page.locator('.habit-row')).toContainText('Nog open');
+  await page.getByLabel('Kies een datum').fill('2026-10-22');
+  await expect(page.locator('.habit-row')).toContainText('Onbekend');
+});
+
+test('optionele details blijven bereikbaar met toetsenbord en worden bewaard', async ({ page }) => {
+  await page.getByRole('button', { name: 'Nieuwe gewoonte', exact: true }).click();
+  await page.getByLabel('Naam van je gewoonte').fill('Naar bed');
+  await expect(page.getByLabel('Wanneer?')).toHaveValue('daily');
+  await expect(page.getByLabel('Gewenst tijdstip')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Maan', exact: true })).toBeHidden();
+  const details = page.locator('.optional-fields summary');
+  await details.focus();
+  await page.keyboard.press('Enter');
+  await page.getByLabel('Gewenst tijdstip').fill('22:30');
+  await page.getByRole('button', { name: 'Maan', exact: true }).click();
+  await page.getByLabel('Waarom wil je dit?').fill('Meer rust');
+  await page.getByLabel('Als het lastig wordt, dan…').fill('Lees ik even.');
+  await page.getByRole('button', { name: 'Gewoonte toevoegen', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.habit-row')).toContainText('Richttijd 22:30');
+  await editor(page, 'Naar bed');
+  await expect(page.getByText('“Meer rust”')).toBeVisible();
+  await expect(page.getByText('Lees ik even.', { exact: true })).toBeVisible();
+});
+
+test('oude export blijft bruikbaar; grafiek behoudt gaten, nul en historische doelgrenzen', async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date('2026-10-22T12:00:00+02:00') });
+  await page.reload();
+  const goal = {
+    effective: '2026-10-01',
+    kind: 'maximum',
+    target: 120,
+    unit: 'minuten',
+    time: '',
+    schedule: { type: 'daily' },
+  };
+  const habit = {
+    id: 'screen',
+    name: 'Schermtijd',
+    icon: 'phone',
+    reason: '',
+    coping: '',
+    createdOn: '2026-10-01',
+    state: 'active',
+    pauses: [],
+    versions: [goal],
+  };
+  const logs = [
+    '2026-10-12',
+    '2026-10-13',
+    '2026-10-14',
+    '2026-10-19',
+    '2026-10-21',
+    '2026-10-22',
+  ].map((day, i) => ({
+    habitId: habit.id,
+    date: day,
+    snapshot: goal,
+    answer: null,
+    closed: true,
+    time: '',
+    updatedAt: `${day}T10:00:00.000Z`,
+    events: [{ id: day, amount: i === 4 ? 0 : i < 3 ? 100 : 80, at: `${day}T10:00:00.000Z` }],
+  }));
+  const oldExport = { schemaVersion: 1, theme: 'light', habits: [habit], logs };
+  await page.getByRole('button', { name: 'Instellingen', exact: true }).click();
+  await page.getByLabel('Ritme-bestand importeren').setInputFiles({
+    name: 'bestaande-ritme.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(oldExport)),
+  });
+  await page.getByRole('button', { name: 'Vervangen en importeren', exact: true }).click();
+  await expect(page.getByText('Je gegevens zijn geïmporteerd.')).toBeVisible();
+  await page.getByRole('button', { name: 'Sluiten', exact: true }).click();
+  await page.reload();
+  await nav(page, 'Inzicht');
+  await expect(page.locator('.chart-point')).toHaveCount(3);
+  await expect(page.locator('.chart-line')).toHaveCount(1); // 21→22 only; no line over missing 20.
+  await expect(page.locator('.period-comparison')).toContainText('Nog onvoldoende informatie');
+  await page.getByText('Waarden en doelen bekijken', { exact: true }).click();
+  await expect(page.getByRole('row', { name: '21 oktober 0 ≤ 120', exact: true })).toBeVisible();
+  await expect(page.getByRole('row', { name: /20 oktober/ })).toHaveCount(0);
+  await page.getByRole('button', { name: '20 oktober: Onbekend', exact: true }).click();
+  await page.getByRole('spinbutton').fill('40');
+  await saveLog(page);
+  await expect(page.locator('.period-comparison')).toContainText('Gemiddeld 60 minuten minder');
+  await expect(page.locator('.period-comparison')).toContainText(
+    '19 okt–21 okt tegenover 12 okt–14 okt',
+  );
+  await expect(page.locator('.chart-point')).toHaveCount(4);
+  await page.getByRole('button', { name: 'Maand', exact: true }).click();
+  await expect(page.locator('.chart-point')).toHaveCount(7);
+  await page.setViewportSize({ width: 320, height: 568 });
   await overflow(page);
 });

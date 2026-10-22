@@ -2490,3 +2490,351 @@ h1 em {
     gap: 4px;
   }
 }
+
+/* Daily use: compact header, stable rows and readable supporting text. */
+.page-today.has-habits {
+  max-width: 920px;
+  padding-top: 28px;
+}
+.has-habits.page-today .page-heading {
+  margin-bottom: 24px;
+  align-items: center;
+}
+.has-habits.page-today h1 {
+  font-size: 36px;
+  letter-spacing: -1px;
+}
+.has-habits.page-today .page-heading .eyebrow {
+  margin-bottom: 8px;
+}
+.has-habits.page-today .page-intro {
+  margin-top: 8px;
+  max-width: none;
+}
+.has-habits .today-layout {
+  display: block;
+}
+.has-habits .daily-list-heading {
+  display: none;
+}
+.has-habits .week-header {
+  margin-bottom: 8px;
+}
+.has-habits .week-strip {
+  padding-bottom: 16px;
+}
+.has-habits .week-strip button {
+  height: 58px;
+  gap: 3px;
+}
+.has-habits .week-strip strong {
+  font-size: 21px;
+}
+.habit-row {
+  min-height: 92px;
+  padding: 8px 0;
+  transition: background 0.2s;
+}
+.habit-row.success {
+  background: color-mix(in srgb, var(--accent-soft) 45%, transparent);
+}
+.row-main {
+  gap: 12px;
+}
+.row-copy {
+  gap: 4px;
+}
+.row-goal,
+.row-status {
+  font-size: 12px;
+}
+.row-status {
+  display: block;
+}
+.row-status > svg {
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+.row-value {
+  font-weight: 550;
+  color: var(--ink);
+}
+.row-hint {
+  color: var(--muted);
+}
+.row-actions {
+  gap: 6px;
+  flex-shrink: 0;
+  padding-right: 0;
+}
+.quick-button {
+  min-width: 46px;
+  height: 42px;
+  gap: 2px;
+}
+.check-button {
+  width: 42px;
+  height: 42px;
+}
+.field-note,
+.info-note,
+.modal-header .muted,
+.settings-content p,
+.checkbox-label small,
+.insight-context,
+.insight-footnote,
+.small-text,
+.today-footer,
+.today-footer .text-button,
+.completion-count {
+  font-size: 12px;
+}
+.legend > span,
+.calendar-labels {
+  font-size: 11px;
+}
+.optional-fields > summary {
+  font-size: 14px;
+}
+.optional-fields > summary > span,
+.optional {
+  font-size: 12px;
+}
+.calendar-day.future,
+.legend i.future {
+  background: transparent;
+  color: var(--muted);
+  border: 1px dotted var(--muted);
+  opacity: 1;
+}
+.calendar-day.off {
+  opacity: 1;
+  color: var(--muted);
+}
+.calendar-day.off > i::after {
+  content: '–';
+}
+.legend i.off::after {
+  content: '–';
+  color: var(--muted);
+}
+.insights-content,
+.habits-page {
+  animation: appear 0.18s ease-out;
+}
+
+/* Values and historical goal boundaries share a scale. Gaps stay empty. */
+.numeric-insight {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  margin: 0 0 22px;
+}
+.numeric-chart {
+  margin: 0 0 16px;
+  min-width: 0;
+}
+.numeric-chart figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 5px;
+  font-size: 12px;
+}
+.numeric-chart figcaption strong {
+  font-weight: 550;
+}
+.numeric-chart figcaption span {
+  color: var(--muted);
+}
+.numeric-chart > svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 6px 0;
+  overflow: visible;
+}
+.numeric-chart svg text {
+  font-size: 11px;
+  fill: var(--muted);
+}
+.chart-gridline {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.chart-target {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.chart-line {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.chart-point {
+  fill: var(--accent);
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}
+.chart-point.provisional {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.chart-note,
+.period-comparison {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.chart-key {
+  display: inline-block;
+  width: 16px;
+  border-top: 2px dashed var(--muted);
+  vertical-align: middle;
+  margin-right: 3px;
+}
+.period-comparison strong {
+  color: var(--accent);
+  font-weight: 550;
+}
+.chart-values {
+  margin-top: 10px;
+  font-size: 12px;
+}
+.chart-values summary {
+  color: var(--accent);
+  cursor: pointer;
+  padding: 8px 0;
+}
+.chart-values table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+.chart-values th,
+.chart-values td {
+  border-bottom: 1px solid var(--line);
+  padding: 7px 3px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.chart-values th {
+  font-weight: 550;
+}
+.chart-values th:first-child {
+  text-align: left;
+}
+.insight-card {
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .page-today.has-habits {
+    padding-top: 21px;
+  }
+  .has-habits.page-today .page-heading {
+    padding-right: 46px;
+    margin-bottom: 20px;
+  }
+  .has-habits.page-today .heading-add {
+    top: 23px;
+  }
+  .has-habits.page-today h1 {
+    font-size: 32px;
+  }
+  .has-habits.page-today .page-intro {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .has-habits .week-strip button {
+    height: 56px;
+  }
+  .row-main {
+    gap: 9px;
+  }
+  .habit-row .habit-icon {
+    width: 34px;
+    height: 38px;
+    border-radius: 8px;
+  }
+  .row-actions {
+    gap: 4px;
+  }
+  .quick-button {
+    min-width: 40px;
+  }
+  .row-status,
+  .row-goal {
+    font-size: 12px;
+  }
+  .row-hint {
+    display: none;
+  }
+  .insight-card {
+    padding: 20px 16px;
+  }
+  .habit-form input,
+  .habit-form select,
+  .habit-form textarea,
+  .log-editor input {
+    font-size: 16px;
+  }
+  .modal-footer {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .modal-footer > .button {
+    white-space: normal;
+    font-size: 12px;
+  }
+}
+@media (max-height: 500px) {
+  .modal-header {
+    position: static;
+    padding-top: 16px;
+    padding-bottom: 14px;
+  }
+}
+.has-habits.page-insights,
+.has-habits.page-habits {
+  padding-top: 28px;
+}
+.has-habits.page-insights h1,
+.has-habits.page-habits h1 {
+  font-size: 38px;
+  letter-spacing: -1px;
+}
+.has-habits.page-insights .page-heading,
+.has-habits.page-habits .page-heading {
+  margin-bottom: 28px;
+}
+.has-habits.page-insights .page-intro,
+.has-habits.page-habits .page-intro {
+  margin-top: 10px;
+}
+.row-value {
+  animation: value-feedback 0.3s ease-out;
+}
+@keyframes value-feedback {
+  from {
+    background: var(--accent-soft);
+  }
+  to {
+    background: transparent;
+  }
+}
+@media (max-width: 720px) {
+  .has-habits.page-insights .page-heading,
+  .has-habits.page-habits .page-heading {
+    padding-right: 44px;
+  }
+  .has-habits.page-insights h1,
+  .has-habits.page-habits h1 {
+    font-size: 32px;
+  }
+  .has-habits.page-insights .heading-add,
+  .has-habits.page-habits .heading-add {
+    top: 26px;
+  }
+}

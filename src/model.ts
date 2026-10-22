@@ -148,7 +148,15 @@ export type Goal = z.infer<typeof goalSchema>;
 export type Habit = z.infer<typeof habitSchema>;
 export type Log = z.infer<typeof logSchema>;
 export type Data = z.infer<typeof dataSchema>;
-export type Status = 'success' | 'failed' | 'unknown' | 'pending' | 'off';
+export type Status = 'success' | 'failed' | 'unknown' | 'pending' | 'off' | 'future';
+export const statusLabels: Record<Status, string> = {
+  success: 'Gelukt',
+  failed: 'Niet gelukt',
+  unknown: 'Onbekend',
+  pending: 'Nog open',
+  off: 'Niet gepland',
+  future: 'Toekomstig',
+};
 export const emptyData = (): Data => ({ schemaVersion: 1, habits: [], logs: [], theme: 'system' });
 export const uid = () => crypto.randomUUID();
 export const total = (log?: Pick<Log, 'events'>) =>
@@ -174,22 +182,17 @@ export function findLog(data: Data, id: string, day: string) {
 }
 export function evaluate(h: Habit, day: string, log?: Log, today = localDate()): Status {
   if (!log && !isScheduled(h, day)) return 'off';
-  if (!log) return 'unknown';
+  if (day > today) return 'future';
+  const empty = day === today ? 'pending' : 'unknown';
+  if (!log) return empty;
   const g = log.snapshot;
-  if (g.kind === 'binary')
-    return log.answer === null ? 'unknown' : log.answer ? 'success' : 'failed';
+  if (g.kind === 'binary') return log.answer === null ? empty : log.answer ? 'success' : 'failed';
   const n = total(log);
-  if (g.kind === 'avoid') return n > 0 ? 'failed' : log.closed ? 'success' : 'unknown';
+  if (g.kind === 'avoid') return n > 0 ? 'failed' : log.closed ? 'success' : empty;
   if (g.kind === 'maximum')
-    return n > g.target
-      ? 'failed'
-      : log.closed
-        ? 'success'
-        : log.events.length
-          ? 'pending'
-          : 'unknown';
+    return n > g.target ? 'failed' : log.closed ? 'success' : log.events.length ? 'pending' : empty;
   return !log.events.length
-    ? 'unknown'
+    ? empty
     : n >= g.target
       ? 'success'
       : day < today
@@ -206,7 +209,7 @@ export function scheduleText(g: Goal) {
   return s.type === 'daily'
     ? 'Elke dag'
     : s.type === 'weekly'
-      ? `${s.count} dagen per week`
+      ? `${s.count} ${s.count === 1 ? 'dag' : 'dagen'} per week`
       : s.days.map((d) => ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'][d]).join(' · ');
 }
 export function newLog(h: Habit, day: string): Log {
