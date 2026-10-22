@@ -68,7 +68,11 @@ npm run deploy:pages
 
 Het script vereist een schoon gecommit werkgebied, bouwt voor `/Ritme/`, controleert de beheermarkering en gebruikt normale pushes, nooit force. `deployment.json` bevat de broncommit. Verander zichtbaarheid of Pages-instellingen niet.
 
-Publicatie van deze update volgt na de laatste gerichte controles; werk deze paragraaf bij met de bevestigde broncommit en openbare verificatie.
+**Update gepubliceerd en openbaar gecontroleerd.** Appbron: `4f4c803737d93932411ea5b49ecb4540882f0a01`; publicatiebranch: `1f59adf`. De bron is normaal naar `main` gepusht en `npm run deploy:pages` heeft `gh-pages` bijgewerkt. De tien opnieuw gebouwde bestanden zijn identiek aan de vooraf gehashte, lokaal geteste productiebuild. Alle tien openbare bestanden zijn daarna via geverifieerde HTTPS opgehaald en op SHA-256 vergeleken: identiek. De canonieke URL geeft HTTP 200 en exact de nieuwe HTML; `deployment.json` bevestigt de broncommit.
+
+Pages-run: https://github.com/harberspepijn/Ritme/actions/runs/39785243142. Workflow succesvol afgerond.
+
+Sluit na het ophalen van de update alle oude Ritme-tabbladen/vensters en open de app opnieuw om een wachtende serviceworker te activeren. Browsergegevens niet wissen. Documentatiecommits na de appbron veranderen de gepubliceerde app niet.
 
 De bestaande GitHub-authenticatie werkt via de beheerde proxy. Git/HTTPS normaal gebruiken, geen tokens uitlezen. Voor GitHub-API-verificatie werkte Python urllib met bestaande proxy en CA-verificatie; de CLI gaf eerder Forbidden. Eerste publicatie was bron `8fc717d`, Pages-run `39654000410`; alle 10 publieke buildbestanden waren destijds identiek aan de geteste build.
 
